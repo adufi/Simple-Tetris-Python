@@ -264,7 +264,7 @@ class Tiles:
 
     def tile(self, x, y, fill = None, color = None):
         if fill != None or color != None:
-            print ('x => ', x, ' y => ', y, 'fill => ', fill, 'color => ', color)
+            # print ('x => ', x, ' y => ', y, 'fill => ', fill, 'color => ', color)
 
             self._tiles[y][x]['fill'] = fill
             self._tiles[y][x]['color'] = color
@@ -307,6 +307,9 @@ class Gameboard:
         self._move_tick = 0
         self._rotate_tick = 0
 
+        self._can_move = True
+        self._can_rotate = True
+
         self._block = Block()
         self._tiles = Tiles()
 
@@ -340,7 +343,6 @@ class Gameboard:
 
     def event(self, keys):
         self._direction = -1
-        self._eventRotate = False
 
         for key in keys:
             if key == pygame.K_LEFT:
@@ -354,6 +356,7 @@ class Gameboard:
 
             elif key == pygame.K_SPACE:
                 self._eventRotate = True
+                # print ('K_SPACE')
 
 
     # Render offset starts at (1, 1) to avoid the border
@@ -431,8 +434,16 @@ class Gameboard:
 
 
     def state_move(self):
-        # Tick user event to prevent blocks to be too fast
         if self._move_tick >= 5:
+            self._can_move = True
+
+        if self._rotate_tick >= 20:
+            self._can_rotate = True
+
+
+
+        # Tick user event to prevent blocks to be too fast
+        if self._can_move:
             if self._direction == 1:
                 if not self.moveMacro(1):
                     return False
@@ -444,11 +455,15 @@ class Gameboard:
                 self.moveMacro(3)
 
             self._move_tick = 0
+            self._can_move = False
+
 
 
         # Tick user event to prevent blocks to be too fast
-        if self._rotate_tick >= 10:
+        if self._can_rotate:
+            print ('can rotate')
             if self._eventRotate:
+                print ('rotate')
                 r = self._block.rotation()
                 r_max = self._block.rotation_max()
 
@@ -456,7 +471,10 @@ class Gameboard:
                     self._block.rotation((r + 1) % r_max)
                     self._block.block(block = self._block.rotate((r + 1) % r_max))
 
+                self._eventRotate = False
+
             self._rotate_tick = 0
+            self._can_rotate = False
 
 
         # Every 30 ticks move down
@@ -482,12 +500,16 @@ class Gameboard:
         # Re-init vars
         self._tick = 0
         self._move_tick = 0
+        self._rotate_tick = 0
+
+        self._can_move = True
+        self._can_rotate = True
 
         self._block.new(blocks[i])
     
 
     # Check collision for a given direction
-    #
+    # 
     #  
     # Return False on collision
     def collisionDirection(self, direction = -1):
@@ -603,8 +625,6 @@ class Gameboard:
 
 
     def checkCompleteRow(self):
-        print ('checkCompleteRow()')
-
         ys = []
         tiles = self._tiles.tiles()
         for y in range(gameboardh):
@@ -618,8 +638,6 @@ class Gameboard:
 
 
     def swapRows(self, rows):
-        print ('swapRows()')
-
         tiles = self._tiles.tiles()
         for irow in rows: 
             self._tiles.delete_row(irow)
