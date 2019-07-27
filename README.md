@@ -1,5 +1,11 @@
 # Simple Tetris Python
- 
-Hello, I've created a simple Tetris game in Python using pygame.
+
+## FR
+Tetris codé sur mon temps libre avec pygame. 
+
+
+## EN
+Tetris game coded on my free time with pygame.
+
 
 ![Capture](https://github.com/adufi/Simple-Tetris-Python/blob/master/Tetris.jpg)
